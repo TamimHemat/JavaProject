@@ -1,0 +1,39 @@
+image: maven:latest
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+  -  target/
+
+
+stages:
+  - build
+  - test
+  - deploy
+  - deliver
+
+build:
+  stage: build
+  script:
+    - mvn -B -DskipTests clean package
+
+test:
+  stage: test
+  script:
+    - mvn test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - target/surefire-reports/*.xml
+ 
+deploy:
+  stage: deploy
+  script:
+    - mvn -B -DskipTests -s settings.xml clean deploy
+
+deliver:
+  stage: deliver
+  script:
+    - chmod +x ./ci/scripts/deliver.sh
+    - ./ci/scripts/deliver.sh
